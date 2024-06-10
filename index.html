@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>USC/SUSノーツ重複検知ツール</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" href="icon.ico">
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">USC/SUSノーツ重複検知ツール</h1>
+        <div class="file-upload">
+            <input type="file" id="musicFile" accept=".usc, .sus">
+        </div>
+        <button id="processButton" class="process-button">処理</button>
+        <div id="results" class="results"></div>
+
+        <div class="legend">
+            <h2>sus分類番号表</h2>
+            <table>
+                <tr>
+                    <th>分類番号</th>
+                    <th>ノーツの種類</th>
+                </tr>
+                <tr>
+                    <td>1</td>
+                    <td>タップ系</td>
+                </tr>
+                <tr>
+                    <td>3</td>
+                    <td>スライド系</td>
+                </tr>
+                <tr>
+                    <td>5</td>
+                    <td>Air系</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <p>作成：ぴぃまん</p>
+        <p>susをほとんどさわったことないのでいろいろ変な可能性があるのでなにかあったらDMかGithubにissueにお願いします。</p>
+        <a href="https://github.com/Piliman22">Github</a>
+        <a href="https://www.youtube.com/@piliman_CH">Youtube</a>
+        <a href="https://x.com/aPLtlWKnva28757">Twitter</a>
+    </footer>
+    <script src="script.js"></script>
+</body>
+</html>
