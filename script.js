@@ -57,7 +57,7 @@ function processUSCFile(content) {
             if (!objectItems.has(key)) {
                 objectItems.set(key, []);
             }
-            if (entry.type !== 'ダメージ') {
+            if (entry.type !== 'damage') {
                 objectItems.get(key).push(entry);
             }
         }
