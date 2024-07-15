@@ -46,24 +46,37 @@ function processUSCFile(content) {
     }
 
     const objects = parsedContent.usc.objects;
-    const items = new Map();
-    let duplicates = [];
+    const objectItems = new Map();
+    const connectionItems = new Map();
+    let objectDuplicates = [];
+    let connectionDuplicates = [];
 
     objects.forEach(entry => {
-        if (entry.beat !== undefined && entry.lane !== undefined && entry.size !== undefined) {
+        if (entry.type === "single") {
             const key = `${entry.beat}-${entry.lane}-${entry.size}`;
-            if (items.has(key)) {
-                items.get(key).push(entry);
-            } else {
-                items.set(key, [entry]);
+            if (!objectItems.has(key)) {
+                objectItems.set(key, []);
             }
+            if (entry.type !== 'ダメージ') {
+                objectItems.get(key).push(entry);
+            }
+        }
+
+        if (entry.type === "slide" && entry.connections) {
+            entry.connections.forEach(connection => {
+                const key = `${connection.beat}-${connection.lane}-${connection.size}`;
+                if (!connectionItems.has(key)) {
+                    connectionItems.set(key, []);
+                }
+                connectionItems.get(key).push({ connection });
+            });
         }
     });
 
-    items.forEach((value, key) => {
-        const hasDamage = value.some(entry => entry.type === 'damage');
-        if (value.length > 1 && !hasDamage) {
-            duplicates.push({
+    // ノーツの重複チェック
+    objectItems.forEach((value, key) => {
+        if (value.length > 1) {
+            objectDuplicates.push({
                 key: key,
                 entries: value,
                 measures: value.map(entry => Math.floor(entry.beat / 4))
@@ -71,24 +84,50 @@ function processUSCFile(content) {
         }
     });
 
-    let resultHTML = '<h2>結果</h2>';
-    if (duplicates.length > 0) {
-        resultHTML += '<p>重複している項目:</p><ul>';
-        duplicates.forEach(duplicate => {
-            resultHTML += `<li>項目: ${duplicate.key}</li><ul>`;
-            duplicate.entries.forEach((item, index) => {
-                resultHTML += `<li>${duplicate.measures[index]}小節目 - beat: ${item.beat}, lane: ${item.lane}, 幅: ${item.size * 2}</li>`;
+    // スライドの重複チェック
+    connectionItems.forEach((value, key) => {
+        if (value.length > 1) {
+            const entries = value.filter(entry => {
+                const conn = entry.connection;
+                return conn.beat === value[0].connection.beat &&
+                       conn.lane === value[0].connection.lane &&
+                       conn.size === value[0].connection.size;
             });
-            resultHTML += '</ul>';
-        });
-        resultHTML += '</ul>';
-    } else {
-        resultHTML += '<p>重複している項目はありません。</p>';
-    }
+
+            if (entries.length > 1) {
+                connectionDuplicates.push({
+                    key: key,
+                    entries: entries,
+                    measures: entries.map(entry => Math.floor(entry.connection.beat / 4))
+                });
+            }
+        }
+    });
+
+    let resultHTML = '<h2>結果</h2>';
+    resultHTML += formatDuplicateResults(objectDuplicates, '重複しているノーツ');
+    resultHTML += formatDuplicateResults(connectionDuplicates, '重複しているスライド');
 
     resultsDiv.innerHTML = resultHTML;
 }
 
+function formatDuplicateResults(duplicates, title) {
+    if (duplicates.length === 0) {
+        return `<p>${title}はありません。</p>`;
+    }
+
+    let resultHTML = `<p>${title}:</p><ul>`;
+    duplicates.forEach(duplicate => {
+        resultHTML += `<li>項目: ${duplicate.key}</li><ul>`;
+        duplicate.entries.forEach((item, index) => {
+            const measure = duplicate.measures[index];
+            resultHTML += `<li>${measure}小節目 - lane: ${item.connection ? item.connection.lane : item.lane}, 幅: ${item.connection ? item.connection.size * 2 : item.size * 2}</li>`;
+        });
+        resultHTML += '</ul>';
+    });
+    resultHTML += '</ul>';
+    return resultHTML;
+}
 
 function processSUSFile(content) {
     const resultsDiv = document.getElementById('results');
