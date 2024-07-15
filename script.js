@@ -61,7 +61,8 @@ function processUSCFile(content) {
     });
 
     items.forEach((value, key) => {
-        if (value.length > 1) {
+        const hasDamage = value.some(entry => entry.type === 'damage');
+        if (value.length > 1 && !hasDamage) {
             duplicates.push({
                 key: key,
                 entries: value,
@@ -80,13 +81,14 @@ function processUSCFile(content) {
             });
             resultHTML += '</ul>';
         });
-
+        resultHTML += '</ul>';
     } else {
         resultHTML += '<p>重複している項目はありません。</p>';
     }
 
     resultsDiv.innerHTML = resultHTML;
 }
+
 
 function processSUSFile(content) {
     const resultsDiv = document.getElementById('results');
